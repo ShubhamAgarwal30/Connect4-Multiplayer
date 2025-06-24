@@ -1,4 +1,4 @@
-import { getDatabase, ref, set, onValue, get, push } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 
 const db = getDatabase(firebaseApp);
 
@@ -13,7 +13,7 @@ let grid = [];
 let isMyTurn = false;
 let roomCode;
 let gameRef;
-let myPlayerNum = null;
+let myPlayerRole = null;
 let playerId = crypto.randomUUID();
 
 function promptRoomCode() {
@@ -23,23 +23,25 @@ function promptRoomCode() {
   const playersRef = ref(db, `rooms/${roomCode}/players`);
   get(playersRef).then(snapshot => {
     const players = snapshot.val() || {};
-    let playerIds = Object.keys(players);
 
-    // Avoid re-adding the same ID in a refresh
-    if (!playerIds.includes(playerId)) {
-      if (playerIds.length >= 2) {
-        alert("Room is full. Please use a different room code.");
-        return;
-      }
-      players[playerId] = true;
-      set(playersRef, players);
-      playerIds.push(playerId);
+    if (players.player1 && players.player2 && !Object.values(players).includes(playerId)) {
+      alert("Room is full. Please use a different room code.");
+      return;
     }
 
-    // Determine player number
-    myPlayerNum = playerIds.indexOf(playerId) + 1;
-    isMyTurn = myPlayerNum === 1;
+    if (!players.player1) {
+      myPlayerRole = 'player1';
+      update(playersRef, { player1: playerId });
+    } else if (!players.player2) {
+      myPlayerRole = 'player2';
+      update(playersRef, { player2: playerId });
+    } else if (players.player1 === playerId) {
+      myPlayerRole = 'player1';
+    } else if (players.player2 === playerId) {
+      myPlayerRole = 'player2';
+    }
 
+    isMyTurn = myPlayerRole === 'player1';
     initGame();
 
     onValue(gameRef, snapshot => {
@@ -56,7 +58,7 @@ function promptRoomCode() {
 
 function initGame() {
   createBoard();
-  if (myPlayerNum === 1) {
+  if (myPlayerRole === 'player1') {
     grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
     currentPlayer = 1;
     syncGame();
@@ -155,7 +157,7 @@ function checkWin(r, c) {
 
 function updatePlayerIndicator() {
   resetBtn.textContent = currentPlayer === 1 ? "Red's Turn (Reset)" : "Yellow's Turn (Reset)";
-  isMyTurn = (currentPlayer === myPlayerNum);
+  isMyTurn = (currentPlayer === 1 && myPlayerRole === 'player1') || (currentPlayer === 2 && myPlayerRole === 'player2');
 }
 
 resetBtn.addEventListener("click", promptRoomCode);
