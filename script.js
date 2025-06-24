@@ -40,28 +40,30 @@ function promptRoomCode() {
       return;
     }
 
-    initGame();
+    console.log("Assigned role:", myPlayerRole);
+    createBoard();
 
     onValue(gameRef, snapshot => {
       const data = snapshot.val();
-      if (!data || !data.grid) return;
-      grid = data.grid;
-      currentPlayer = data.currentPlayer;
-      updatePlayerIndicator();
-      renderBoard();
-      checkForEnd();
+      if (!data || !data.grid) {
+        if (myPlayerRole === 'player1') {
+          console.log("Creating grid as Player 1");
+          grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+          currentPlayer = 1;
+          set(gameRef, { grid, currentPlayer, gameStarted: true });
+        } else {
+          console.log("Waiting for Player 1 to start the game...");
+          return;
+        }
+      } else {
+        grid = data.grid;
+        currentPlayer = data.currentPlayer;
+        renderBoard();
+        updatePlayerIndicator();
+        checkForEnd();
+      }
     });
   });
-}
-
-function initGame() {
-  createBoard();
-  if (myPlayerRole === 'player1') {
-    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-    currentPlayer = 1;
-    syncGame();
-  }
-  updatePlayerIndicator();
 }
 
 function createBoard() {
@@ -94,7 +96,7 @@ function renderBoard() {
 
 function handleClick(e) {
   updatePlayerIndicator();
-  if (!isMyTurn) return;
+  if (!isMyTurn || !grid.length) return;
   const col = parseInt(e.target.dataset.col);
   if (makeMove(col)) {
     currentPlayer = currentPlayer === 1 ? 2 : 1;
