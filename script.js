@@ -7,6 +7,9 @@ const COLS = 7;
 const board = document.getElementById("board");
 const resetBtn = document.getElementById("reset");
 const message = document.getElementById("winner-message");
+const modeContainer = document.getElementById("mode-container");
+const gameContainer = document.getElementById("game-container");
+const quitBtn = document.getElementById("quit-mode");
 
 let currentPlayer = 1;
 let grid = [];
@@ -16,6 +19,12 @@ let gameRef;
 let myPlayerRole = null;
 let playerId = localStorage.getItem("playerId") || crypto.randomUUID();
 localStorage.setItem("playerId", playerId);
+
+function selectMultiplayerMode() {
+  modeContainer.style.display = "none";
+  gameContainer.style.display = "flex";
+  promptRoomCode();
+}
 
 function promptRoomCode() {
   roomCode = prompt("Enter room code (share with your friend):").trim();
@@ -50,7 +59,7 @@ function promptRoomCode() {
           console.log("Creating grid as Player 1");
           grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
           currentPlayer = 1;
-          set(gameRef, { grid, currentPlayer, gameStarted: true });
+          update(gameRef, { grid, currentPlayer, gameStarted: true });
         } else {
           console.log("Waiting for Player 1 to start the game...");
           return;
@@ -116,7 +125,7 @@ function makeMove(col) {
 }
 
 function syncGame() {
-  set(gameRef, { grid, currentPlayer });
+  update(gameRef, { grid, currentPlayer });
 }
 
 function checkForEnd() {
@@ -161,5 +170,10 @@ function updatePlayerIndicator() {
   isMyTurn = (currentPlayer === 1 && myPlayerRole === 'player1') || (currentPlayer === 2 && myPlayerRole === 'player2');
 }
 
-resetBtn.addEventListener("click", promptRoomCode);
-promptRoomCode();
+resetBtn.addEventListener("click", () => {
+  location.reload();
+});
+
+quitBtn.addEventListener("click", () => {
+  location.reload();
+});

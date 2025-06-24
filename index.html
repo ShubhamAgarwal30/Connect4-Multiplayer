@@ -5,37 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Connect 4 Multiplayer</title>
   <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <h1>Connect 4 Multiplayer</h1>
-
-  <div id="container">
-    <div id="game-area">
-      <div class="top-bar">
-        <button id="reset">🔁 Restart / Join Room</button>
-        <span id="turn-indicator">Your Turn</span>
-      </div>
-      <div id="board"></div>
-      <div id="winner-message"></div>
-    </div>
-  </div>
-
-  <!-- Firebase SDKs and app initialization -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    window.firebaseApp = initializeApp({
+  <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js"></script>
+  <script>
+    const firebaseConfig = {
       apiKey: "AIzaSyDaNUYJhJCc7OjYxEO_BvLdCqf6dSrvsfk",
       authDomain: "connect4-multiplayer-23241.firebaseapp.com",
       databaseURL: "https://connect4-multiplayer-23241-default-rtdb.firebaseio.com",
       projectId: "connect4-multiplayer-23241",
-      storageBucket: "connect4-multiplayer-23241.firebasestorage.app",
+      storageBucket: "connect4-multiplayer-23241.appspot.com",
       messagingSenderId: "849375839729",
       appId: "1:849375839729:web:5b0d0b22d7b6203ffe7050"
-    });
+    };
+    const firebaseApp = firebase.initializeApp(firebaseConfig);
   </script>
-
-  <!-- Your multiplayer logic -->
+</head>
+<body>
+  <div id="app">
+    <div id="mode-container" class="panel">
+      <h2>Select Mode</h2>
+      <button onclick="selectMultiplayerMode()">Play with Friend</button>
+    </div>
+    <div id="game-container" class="panel" style="display: none;">
+      <div class="header">
+        <h1>Connect 4 Multiplayer</h1>
+        <button id="quit-mode">Quit Mode</button>
+      </div>
+      <div class="game-area">
+        <div id="board" class="board"></div>
+        <div id="winner-message" class="message"></div>
+      </div>
+      <button id="reset">Red's Turn (Reset)</button>
+    </div>
+  </div>
   <script type="module" src="script.js"></script>
 </body>
 </html>
-
