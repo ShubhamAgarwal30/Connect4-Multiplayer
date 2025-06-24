@@ -14,7 +14,8 @@ let isMyTurn = false;
 let roomCode;
 let gameRef;
 let myPlayerRole = null;
-let playerId = crypto.randomUUID();
+let playerId = localStorage.getItem("playerId") || crypto.randomUUID();
+localStorage.setItem("playerId", playerId);
 
 function promptRoomCode() {
   roomCode = prompt("Enter room code (share with your friend):").trim();
@@ -24,24 +25,21 @@ function promptRoomCode() {
   get(playersRef).then(snapshot => {
     const players = snapshot.val() || {};
 
-    if (players.player1 && players.player2 && !Object.values(players).includes(playerId)) {
-      alert("Room is full. Please use a different room code.");
-      return;
-    }
-
-    if (!players.player1) {
+    if (players.player1 === playerId) {
+      myPlayerRole = 'player1';
+    } else if (players.player2 === playerId) {
+      myPlayerRole = 'player2';
+    } else if (!players.player1) {
       myPlayerRole = 'player1';
       update(playersRef, { player1: playerId });
     } else if (!players.player2) {
       myPlayerRole = 'player2';
       update(playersRef, { player2: playerId });
-    } else if (players.player1 === playerId) {
-      myPlayerRole = 'player1';
-    } else if (players.player2 === playerId) {
-      myPlayerRole = 'player2';
+    } else {
+      alert("Room is full. Please use a different room code.");
+      return;
     }
 
-    isMyTurn = myPlayerRole === 'player1';
     initGame();
 
     onValue(gameRef, snapshot => {
@@ -49,8 +47,8 @@ function promptRoomCode() {
       if (!data || !data.grid) return;
       grid = data.grid;
       currentPlayer = data.currentPlayer;
-      renderBoard();
       updatePlayerIndicator();
+      renderBoard();
       checkForEnd();
     });
   });
@@ -95,6 +93,7 @@ function renderBoard() {
 }
 
 function handleClick(e) {
+  updatePlayerIndicator();
   if (!isMyTurn) return;
   const col = parseInt(e.target.dataset.col);
   if (makeMove(col)) {
